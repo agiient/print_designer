@@ -1188,6 +1188,7 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		async loadElements(printDesignName) {
 			frappe.dom.freeze(__("Loading Print Format"));
+			const MainStore = useMainStore();
 			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
 				"print_designer_header",
 				"print_designer_body",
@@ -1197,6 +1198,7 @@ export const useElementStore = defineStore("ElementStore", {
 			]);
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
 			this.loadSettings(settings);
+			MainStore.settingsLoaded = true;
 
 			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
 			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);

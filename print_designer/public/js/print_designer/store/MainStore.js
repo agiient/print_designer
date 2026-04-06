@@ -24,6 +24,7 @@ export const useMainStore = defineStore("MainStore", {
 		cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
 		isDrawing: false,
+		settingsLoaded: false,
 		doctype: null,
 		currentDoc: null,
 		pdfPrintDPI: 96,

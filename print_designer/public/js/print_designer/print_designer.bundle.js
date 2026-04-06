@@ -8,37 +8,37 @@ class PrintDesigner {
 		const app = createApp(Designer, { print_format_name: this.print_format });
 		app.use(createPinia());
 		SetVueGlobals(app);
-		// Ensure the print designer header (position:absolute; top:0; left:0) is
-		// scoped to the app wrapper, not a distant ancestor that includes the
-		// Frappe workspace sidebar.
-		this.$wrapper[0].style.position = "relative";
-		app.mount(this.$wrapper.get(0));
 
-		// Expand Frappe's top-navbar container to full width
-		let headerContainer = document.querySelector("header .container");
-		headerContainer.style.width = "100%";
-		headerContainer.style.minWidth = "100%";
-		headerContainer.style.userSelect = "none";
+		// Make the print designer a full-viewport overlay at z-index 1030 so it
+		// sits cleanly above the Frappe navbar (z-index ~1019) and sidebar
+		// (z-index 1020) regardless of how Frappe positions its page wrapper.
+		const wrapperEl = this.$wrapper[0];
+		wrapperEl.style.position = "fixed";
+		wrapperEl.style.top = "0";
+		wrapperEl.style.left = "0";
+		wrapperEl.style.width = "100vw";
+		wrapperEl.style.height = "100vh";
+		wrapperEl.style.zIndex = "1030";
 
-		// Hide Frappe's workspace sidebar so it doesn't fight z-index with the
-		// print designer header (both are z-index 1020). Print designer is a
-		// full-page editor; the sidebar is not useful here.
+		app.mount(wrapperEl);
+
+		// Hide the sidebar and page-head (behind the overlay but prevents visual
+		// noise if the overlay ever has a transparent region).
 		const sidebarContainer = document.querySelector(".body-sidebar-container");
 		const sidebarPlaceholder = document.querySelector(".body-sidebar-placeholder");
 		if (sidebarContainer) sidebarContainer.style.display = "none";
 		if (sidebarPlaceholder) sidebarPlaceholder.style.display = "none";
-
-		// Hide Frappe's page-head (breadcrumbs/title bar) so the canvas sits
-		// flush against the navbar — print designer has its own header bar.
 		const pageHead = document.querySelector(".page-head");
 		if (pageHead) pageHead.style.display = "none";
 
 		frappe.router.once("change", () => {
 			// Restore everything on route change (exit)
-			this.$wrapper[0].style.position = "";
-			headerContainer.style.width = null;
-			headerContainer.style.minWidth = null;
-			headerContainer.style.userSelect = "auto";
+			wrapperEl.style.position = "";
+			wrapperEl.style.top = "";
+			wrapperEl.style.left = "";
+			wrapperEl.style.width = "";
+			wrapperEl.style.height = "";
+			wrapperEl.style.zIndex = "";
 			if (sidebarContainer) sidebarContainer.style.display = "";
 			if (sidebarPlaceholder) sidebarPlaceholder.style.display = "";
 			if (pageHead) pageHead.style.display = "";

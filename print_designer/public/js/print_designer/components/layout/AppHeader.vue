@@ -247,6 +247,8 @@ const openDoctypeDialog = () => {
 	position: absolute;
 	top: 0;
 	left: 0;
+	right: 0;
+	width: 100%;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;

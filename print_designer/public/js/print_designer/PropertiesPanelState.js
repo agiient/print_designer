@@ -16,7 +16,7 @@ import {
  * templates — meaning page size and UOM changes would silently not persist.
  */
 const _saveSettingsOnly = (MainStore) => {
-	if (!MainStore.printDesignName) return;
+	if (!MainStore.printDesignName || !MainStore.settingsLoaded) return;
 	const settingsForSave = {
 		page: { ...MainStore.page },
 		pdfPrintDPI: MainStore.pdfPrintDPI,
