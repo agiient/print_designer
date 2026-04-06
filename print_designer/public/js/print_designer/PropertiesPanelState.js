@@ -9,6 +9,34 @@ import {
 	getConditonalObject,
 	getParentPage,
 } from "./utils";
+/**
+ * Save only `print_designer_settings` (page size, UOM, fonts, etc.) without
+ * triggering the full saveElements() flow. Full save shows an alert and is
+ * guarded by checkIfAnyTableIsEmpty(), which blocks the save on fresh/empty
+ * templates — meaning page size and UOM changes would silently not persist.
+ */
+const _saveSettingsOnly = (MainStore) => {
+	if (!MainStore.printDesignName) return;
+	const settingsForSave = {
+		page: { ...MainStore.page },
+		pdfPrintDPI: MainStore.pdfPrintDPI,
+		globalStyles: MainStore.globalStyles,
+		currentPageSize: MainStore.currentPageSize,
+		isHeaderFooterAuto: MainStore.isHeaderFooterAuto,
+		currentDoc: MainStore.currentDoc,
+		textControlType: MainStore.textControlType,
+		currentFonts: MainStore.currentFonts,
+		printHeaderFonts: MainStore.printHeaderFonts,
+		printFooterFonts: MainStore.printFooterFonts,
+		printBodyFonts: MainStore.printBodyFonts,
+		userProvidedJinja: MainStore.userProvidedJinja,
+		schema_version: MainStore.schema_version,
+	};
+	frappe.db.set_value("Print Format", MainStore.printDesignName, {
+		print_designer_settings: JSON.stringify(settingsForSave),
+	});
+};
+
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
@@ -356,8 +384,7 @@ export const createPropertiesPanel = () => {
 									MainStore.pageSizes[value][1],
 									"mm"
 								);
-								// Persist immediately — page size is not auto-saved otherwise
-								ElementStore.saveElements();
+								_saveSettingsOnly(MainStore);
 							} else {
 								MainStore.frappeControls[name].set_value(
 									MainStore.currentPageSize
@@ -389,8 +416,7 @@ export const createPropertiesPanel = () => {
 						reactiveObject: page,
 						propertyName: "UOM",
 						onChangeCallback: () => {
-							// Persist immediately — UOM is not auto-saved otherwise
-							ElementStore.saveElements();
+							_saveSettingsOnly(MainStore);
 						},
 					});
 				},

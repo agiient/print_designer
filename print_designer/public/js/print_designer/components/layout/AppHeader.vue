@@ -147,6 +147,14 @@ const goToLastPage = () => {
 // ── Preview toggle ────────────────────────────────────────────────────────
 const togglePreview = () => {
 	MainStore.isPreviewMode = !MainStore.isPreviewMode;
+	// When returning to edit, ensure the marquee/selection state is correct
+	// for whatever tool was active before preview.
+	if (!MainStore.isPreviewMode) {
+		MainStore.isMarqueeActive = MainStore.activeControl === "mouse-pointer";
+		MainStore.isDrawing = ["rectangle", "image", "table", "barcode"].includes(
+			MainStore.activeControl
+		);
+	}
 };
 
 // ── Duplicate for another DocType ─────────────────────────────────────────
