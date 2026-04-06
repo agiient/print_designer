@@ -119,7 +119,7 @@ watchEffect(() => {
 	--primary-color: #7b4b57;
 	.app-sections {
 		flex: 1;
-		height: calc(100vh - var(--navbar-height));
+		height: calc(100vh - 2 * var(--navbar-height));
 		padding: 0;
 		margin-top: 0;
 		background-color: var(--card-bg);
@@ -141,7 +141,7 @@ watchEffect(() => {
 		display: flex;
 		position: relative;
 		flex-direction: column;
-		height: calc(100vh - var(--navbar-height));
+		height: calc(100vh - 2 * var(--navbar-height));
 		background-color: var(--subtle-fg);
 	}
 	.preview-mode {

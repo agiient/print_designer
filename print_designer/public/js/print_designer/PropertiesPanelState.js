@@ -343,7 +343,7 @@ export const createPropertiesPanel = () => {
 				label: () => `Select ${MainStore.rawMeta?.name || "Document"}`,
 				isLabelled: true,
 				name: "documentName",
-				condtional: () => !!MainStore.currentDoc,
+				condtional: null,
 				frappeControl: (ref, name) => {
 					const { doctype, currentDoc } = storeToRefs(MainStore);
 					makeFeild({

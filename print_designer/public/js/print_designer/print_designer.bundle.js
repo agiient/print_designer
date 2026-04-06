@@ -28,6 +28,11 @@ class PrintDesigner {
 		if (sidebarContainer) sidebarContainer.style.display = "none";
 		if (sidebarPlaceholder) sidebarPlaceholder.style.display = "none";
 
+		// Hide Frappe's page-head (breadcrumbs/title bar) so the canvas sits
+		// flush against the navbar — print designer has its own header bar.
+		const pageHead = document.querySelector(".page-head");
+		if (pageHead) pageHead.style.display = "none";
+
 		frappe.router.once("change", () => {
 			// Restore everything on route change (exit)
 			this.$wrapper[0].style.position = "";
@@ -36,6 +41,7 @@ class PrintDesigner {
 			headerContainer.style.userSelect = "auto";
 			if (sidebarContainer) sidebarContainer.style.display = "";
 			if (sidebarPlaceholder) sidebarPlaceholder.style.display = "";
+			if (pageHead) pageHead.style.display = "";
 			app.unmount();
 		});
 	}
