@@ -9,14 +9,28 @@ class PrintDesigner {
 		app.use(createPinia());
 		SetVueGlobals(app);
 		app.mount(this.$wrapper.get(0));
+
+		// Expand Frappe's top-navbar container to full width
 		let headerContainer = document.querySelector("header .container");
 		headerContainer.style.width = "100%";
 		headerContainer.style.minWidth = "100%";
 		headerContainer.style.userSelect = "none";
+
+		// Hide Frappe's workspace sidebar so it doesn't fight z-index with the
+		// print designer header (both are z-index 1020). Print designer is a
+		// full-page editor; the sidebar is not useful here.
+		const sidebarContainer = document.querySelector(".body-sidebar-container");
+		const sidebarPlaceholder = document.querySelector(".body-sidebar-placeholder");
+		if (sidebarContainer) sidebarContainer.style.display = "none";
+		if (sidebarPlaceholder) sidebarPlaceholder.style.display = "none";
+
 		frappe.router.once("change", () => {
+			// Restore everything on route change (exit)
 			headerContainer.style.width = null;
 			headerContainer.style.minWidth = null;
 			headerContainer.style.userSelect = "auto";
+			if (sidebarContainer) sidebarContainer.style.display = "";
+			if (sidebarPlaceholder) sidebarPlaceholder.style.display = "";
 			app.unmount();
 		});
 	}
