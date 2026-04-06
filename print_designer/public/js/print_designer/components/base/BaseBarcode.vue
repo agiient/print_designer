@@ -17,7 +17,7 @@
 			:key="id"
 			v-html="barcodeSvg"
 		></div>
-		<div class="fallback-image" v-else>
+		<div class="fallback-barcode" v-else>
 			<div class="content">
 				<span v-if="width >= 100 || height >= 100"
 					>Please Double click to select Barcode</span

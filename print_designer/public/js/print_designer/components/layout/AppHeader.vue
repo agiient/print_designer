@@ -17,6 +17,33 @@
 			{{ print_format_name }}
 		</h3>
 		<span class="indicator-pill no-indicator-dot ellipsis gray">Beta</span>
+
+		<!-- DocType selector -->
+		<div class="doctype-selector">
+			<span class="doctype-label">{{ __("DocType") }}:</span>
+			<span
+				class="doctype-value"
+				:title="__('Click to change linked DocType')"
+				@click="openDoctypeDialog"
+			>
+				{{ MainStore.doctype || __("None") }}
+				<span class="fa fa-pencil edit-icon"></span>
+			</span>
+		</div>
+
+		<!-- Preview / Edit toggle -->
+		<button
+			class="btn btn-sm preview-btn"
+			:class="MainStore.isPreviewMode ? 'btn-primary' : 'btn-default'"
+			@click="togglePreview"
+			:title="MainStore.isPreviewMode ? __('Back to Editor') : __('Preview PDF')"
+		>
+			<span
+				:class="MainStore.isPreviewMode ? 'fa fa-pencil' : 'fa fa-eye'"
+			></span>
+			<span>{{ MainStore.isPreviewMode ? __("Edit") : __("Preview") }}</span>
+		</button>
+
 		<button class="btn btn-sm btn-default exit-btn" @click="goToLastPage">
 			<svg
 				width="14"
@@ -35,6 +62,7 @@
 import { ref } from "vue";
 import { useMainStore } from "../../store/MainStore";
 import { selectElementContents } from "../../utils";
+import { fetchMeta } from "../../store/fetchMetaAndData";
 
 const MainStore = useMainStore();
 
@@ -100,6 +128,7 @@ const handleKeyDown = (e) => {
 const props = defineProps({
 	print_format_name: String,
 });
+
 const goToLastPage = () => {
 	let prev_route = frappe.get_prev_route();
 	if (prev_route[0] !== "print-designer") {
@@ -107,6 +136,43 @@ const goToLastPage = () => {
 	} else {
 		frappe.set_route();
 	}
+};
+
+// ── Preview toggle ────────────────────────────────────────────────────────
+const togglePreview = () => {
+	MainStore.isPreviewMode = !MainStore.isPreviewMode;
+};
+
+// ── DocType selector ──────────────────────────────────────────────────────
+const openDoctypeDialog = () => {
+	const d = new frappe.ui.Dialog({
+		title: __("Change Linked DocType"),
+		fields: [
+			{
+				label: __("DocType"),
+				fieldname: "doctype",
+				fieldtype: "Link",
+				options: "DocType",
+				default: MainStore.doctype,
+				reqd: 1,
+			},
+		],
+		primary_action_label: __("Apply"),
+		primary_action: async ({ doctype }) => {
+			if (!doctype || doctype === MainStore.doctype) {
+				d.hide();
+				return;
+			}
+			// Persist to the Print Format record
+			await frappe.db.set_value("Print Format", MainStore.printDesignName, "doc_type", doctype);
+			MainStore.doctype = doctype;
+			// Reload field meta for the new doctype
+			await fetchMeta();
+			frappe.show_alert({ message: __("DocType updated to {0}", [doctype]), indicator: "green" }, 4);
+			d.hide();
+		},
+	});
+	d.show();
 };
 </script>
 <style scoped lang="scss">
@@ -136,6 +202,47 @@ const goToLastPage = () => {
 		margin-bottom: 0;
 		user-select: none;
 		cursor: text;
+	}
+
+	.doctype-selector {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+		white-space: nowrap;
+
+		.doctype-label {
+			font-weight: 500;
+		}
+
+		.doctype-value {
+			cursor: pointer;
+			color: var(--text-color);
+			border-bottom: 1px dashed var(--gray-400);
+			padding-bottom: 1px;
+			display: flex;
+			align-items: center;
+			gap: 4px;
+
+			&:hover {
+				color: var(--primary);
+				border-bottom-color: var(--primary);
+			}
+
+			.edit-icon {
+				font-size: 10px;
+				opacity: 0.6;
+			}
+		}
+	}
+
+	.preview-btn {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 10px;
+		white-space: nowrap;
 	}
 
 	.exit-btn {

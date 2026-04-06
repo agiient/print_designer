@@ -38,9 +38,12 @@
 	/>
 	<AppHeader :print_format_name="print_format_name" />
 	<div class="main-layout" id="main-layout">
-		<AppToolbar :class="toolbarClasses" />
-		<AppCanvas class="app-sections print-format-container" />
-		<AppPropertiesPanel class="app-sections properties-panel" />
+		<template v-if="!MainStore.isPreviewMode">
+			<AppToolbar :class="toolbarClasses" />
+			<AppCanvas class="app-sections print-format-container" />
+			<AppPropertiesPanel class="app-sections properties-panel" />
+		</template>
+		<AppPreviewPdf v-else class="app-sections print-format-container preview-mode" />
 	</div>
 </template>
 
@@ -51,6 +54,7 @@ import AppHeader from "./components/layout/AppHeader.vue";
 import AppToolbar from "./components/layout/AppToolbar.vue";
 import AppCanvas from "./components/layout/AppCanvas.vue";
 import AppPropertiesPanel from "./components/layout/AppPropertiesPanel.vue";
+import AppPreviewPdf from "./components/layout/AppPreviewPdf.vue";
 import { useAttachKeyBindings } from "./composables/AttachKeyBindings";
 import { fetchMeta } from "./store/fetchMetaAndData";
 
@@ -139,6 +143,11 @@ watchEffect(() => {
 		flex-direction: column;
 		height: calc(100vh - var(--navbar-height));
 		background-color: var(--subtle-fg);
+	}
+	.preview-mode {
+		flex: 1;
+		width: 100%;
+		max-width: 100%;
 	}
 	.properties-panel {
 		width: 250px;

@@ -2,6 +2,17 @@
 	<div class="barcode-format-selector">
 		<AppPropertiesFrappeControl :key="`FC_${fd.name}`" class="barcode-format" :field="fd" />
 	</div>
+	<!-- Static value input: shown when no dynamic field is selected -->
+	<div class="static-value-row" v-if="!fieldnames.length || fieldnames[0]?.is_static">
+		<label class="static-value-label">{{ __("Static Value") }}</label>
+		<input
+			class="static-value-input"
+			type="text"
+			:placeholder="__('Enter barcode value…')"
+			:value="staticInputValue"
+			@input="onStaticInput"
+		/>
+	</div>
 	<div class="preview-container">
 		<div class="settings" @click.self.stop="selectedEl = null">
 			<template v-for="(field, index) in fieldnames" :key="index">
@@ -90,14 +101,18 @@
 				>
 			</div>
 		</div>
+		<div class="deleteIcon" @click="deleteElement" :title="__('Delete barcode element')">
+			<span class="fa fa-trash"></span>
+		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, watch, toRefs, nextTick, onMounted } from "vue";
+import { ref, computed, watch, toRefs, nextTick, onMounted } from "vue";
 import { useMainStore } from "../../store/MainStore";
 import { makeFeild } from "../../frappeControl";
 import { storeToRefs } from "pinia";
+import { deleteCurrentElements } from "../../utils";
 import AppPropertiesFrappeControl from "./AppPropertiesFrappeControl.vue";
 const MainStore = useMainStore();
 const props = defineProps({
@@ -232,6 +247,32 @@ watch(
 	{ deep: true, immediate: true }
 );
 
+// ── Static value input ────────────────────────────────────────────────────
+// Shows when no dynamic field is selected. Writes directly into the element's
+// reactive `value` so the barcode SVG watcher re-renders immediately.
+const currentElement = computed(() => MainStore.getCurrentElementsValues[0]);
+const staticInputValue = computed(() =>
+	!props.fieldnames.length || props.fieldnames[0]?.is_static
+		? currentElement.value?.value || ""
+		: ""
+);
+const onStaticInput = (e) => {
+	const val = e.target.value;
+	if (currentElement.value) {
+		currentElement.value.value = val;
+	}
+	// Also keep the static fieldnames entry in sync if present
+	if (props.fieldnames[0]?.is_static) {
+		props.fieldnames[0].value = val;
+	}
+};
+
+// ── Delete element ─────────────────────────────────────────────────────────
+const deleteElement = () => {
+	deleteCurrentElements();
+	MainStore.openBarcodeModal = null;
+};
+
 const parentField = ref("");
 const setParentField = (value) => {
 	if (parentField.value != value) {
@@ -302,6 +343,36 @@ const addStaticText = (event) => {
 </script>
 
 <style lang="scss" scoped>
+.static-value-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 10px;
+
+	.static-value-label {
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+		white-space: nowrap;
+		min-width: 90px;
+	}
+
+	.static-value-input {
+		flex: 1;
+		height: 28px;
+		padding: 4px 10px;
+		font-size: var(--text-md);
+		color: var(--text-color);
+		background-color: var(--control-bg);
+		border: 1px solid var(--gray-300);
+		border-radius: var(--border-radius);
+		outline: none;
+		&:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 2px var(--primary-light);
+		}
+	}
+}
+
 .preview-container {
 	flex: 1;
 	display: flex;
