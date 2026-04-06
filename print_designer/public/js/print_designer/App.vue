@@ -113,6 +113,7 @@ watchEffect(() => {
 	display: flex;
 	justify-content: space-between;
 	margin: 0;
+	margin-top: var(--navbar-height);
 	cursor: default;
 	--primary: #7b4b57;
 	--primary-color: #7b4b57;
