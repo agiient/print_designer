@@ -44,6 +44,12 @@
 			<span>{{ MainStore.isPreviewMode ? __("Edit") : __("Preview") }}</span>
 		</button>
 
+		<!-- Duplicate for another DocType -->
+		<button class="btn btn-sm btn-default duplicate-btn" @click="duplicateForDocType" :title="__('Copy this template for a different DocType')">
+			<span class="fa fa-copy"></span>
+			<span>{{ __("Duplicate") }}</span>
+		</button>
+
 		<button class="btn btn-sm btn-default exit-btn" @click="goToLastPage">
 			<svg
 				width="14"
@@ -143,6 +149,59 @@ const togglePreview = () => {
 	MainStore.isPreviewMode = !MainStore.isPreviewMode;
 };
 
+// ── Duplicate for another DocType ─────────────────────────────────────────
+const duplicateForDocType = () => {
+	const d = new frappe.ui.Dialog({
+		title: __("Duplicate Template for Another DocType"),
+		fields: [
+			{
+				label: __("New Template Name"),
+				fieldname: "new_name",
+				fieldtype: "Data",
+				default: MainStore.printDesignName + " (Copy)",
+				reqd: 1,
+			},
+			{
+				label: __("Target DocType"),
+				fieldname: "doctype",
+				fieldtype: "Link",
+				options: "DocType",
+				default: MainStore.doctype,
+				reqd: 1,
+				description: __("The duplicated template will be linked to this DocType. All layout, colors, and fonts are preserved; dynamic fields referencing the original DocType will still need to be re-mapped if the field names differ."),
+			},
+		],
+		primary_action_label: __("Duplicate"),
+		primary_action: async ({ new_name, doctype }) => {
+			if (!new_name || !doctype) return;
+			frappe.dom.freeze(__("Duplicating…"));
+			try {
+				// Rename (copy) via frappe.copy_doc
+				const result = await frappe.call({
+					method: "frappe.client.copy_doc",
+					args: { doc: await frappe.db.get_doc("Print Format", MainStore.printDesignName) },
+				});
+				const newDoc = result.message;
+				newDoc.name = new_name;
+				newDoc.doc_type = doctype;
+				await frappe.db.insert(newDoc);
+				frappe.dom.unfreeze();
+				frappe.show_alert({ message: __("Duplicated as {0}", [new_name]), indicator: "green" }, 5);
+				d.hide();
+				// Offer to open the duplicate
+				frappe.confirm(
+					__("Open the duplicated template now?"),
+					() => frappe.set_route("print-designer", new_name)
+				);
+			} catch (err) {
+				frappe.dom.unfreeze();
+				frappe.show_alert({ message: __("Duplicate failed: {0}", [err.message || err]), indicator: "red" }, 6);
+			}
+		},
+	});
+	d.show();
+};
+
 // ── DocType selector ──────────────────────────────────────────────────────
 const openDoctypeDialog = () => {
 	const d = new frappe.ui.Dialog({
@@ -237,7 +296,8 @@ const openDoctypeDialog = () => {
 		}
 	}
 
-	.preview-btn {
+	.preview-btn,
+	.duplicate-btn {
 		display: flex;
 		align-items: center;
 		gap: 4px;

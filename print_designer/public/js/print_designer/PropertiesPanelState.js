@@ -356,6 +356,8 @@ export const createPropertiesPanel = () => {
 									MainStore.pageSizes[value][1],
 									"mm"
 								);
+								// Persist immediately — page size is not auto-saved otherwise
+								ElementStore.saveElements();
 							} else {
 								MainStore.frappeControls[name].set_value(
 									MainStore.currentPageSize
@@ -386,6 +388,10 @@ export const createPropertiesPanel = () => {
 						],
 						reactiveObject: page,
 						propertyName: "UOM",
+						onChangeCallback: () => {
+							// Persist immediately — UOM is not auto-saved otherwise
+							ElementStore.saveElements();
+						},
 					});
 				},
 			},

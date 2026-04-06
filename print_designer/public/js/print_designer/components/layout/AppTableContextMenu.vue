@@ -91,7 +91,7 @@ onClickOutside(DOMRef, () => {
 
 <style lang="scss" scoped>
 .menu {
-	position: absolute;
+	position: fixed;
 	display: flex;
 	flex-direction: column;
 	background-color: var(--fg-color);

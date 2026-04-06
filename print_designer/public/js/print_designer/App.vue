@@ -38,12 +38,11 @@
 	/>
 	<AppHeader :print_format_name="print_format_name" />
 	<div class="main-layout" id="main-layout">
-		<template v-if="!MainStore.isPreviewMode">
-			<AppToolbar :class="toolbarClasses" />
-			<AppCanvas class="app-sections print-format-container" />
-			<AppPropertiesPanel class="app-sections properties-panel" />
-		</template>
-		<AppPreviewPdf v-else class="app-sections print-format-container preview-mode" />
+		<!-- Keep editor always mounted so v-marquee directive and DOM refs stay valid -->
+		<AppToolbar :class="toolbarClasses" v-show="!MainStore.isPreviewMode" />
+		<AppCanvas class="app-sections print-format-container" v-show="!MainStore.isPreviewMode" />
+		<AppPropertiesPanel class="app-sections properties-panel" v-show="!MainStore.isPreviewMode" />
+		<AppPreviewPdf v-if="MainStore.isPreviewMode" class="app-sections print-format-container preview-mode" />
 	</div>
 </template>
 

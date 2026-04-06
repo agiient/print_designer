@@ -110,7 +110,9 @@
 				MainStore.getCurrentElementsId.includes(id)
 			"
 		/>
+		<Teleport to="body">
 		<AppTableContextMenu v-if="menu" v-bind="{ menu }" @handleMenuClick="handleMenuClick" />
+	</Teleport>
 	</div>
 </template>
 
@@ -266,15 +268,17 @@ const { setElements } = useElement({
 });
 
 const handleMenu = (e, index) => {
+	// Use fixed viewport coordinates so the menu is teleported to body and
+	// never clipped by the table's overflow: hidden container.
 	if (!menu.value) {
 		menu.value = {
-			left: e.x - DOMRef.value.getBoundingClientRect().x + "px",
-			top: e.y - DOMRef.value.getBoundingClientRect().y + "px",
+			left: e.clientX + "px",
+			top: e.clientY + "px",
 			index: index,
 		};
 	} else {
-		menu.value.left = e.x - DOMRef.value.getBoundingClientRect().x + "px";
-		menu.value.top = e.y - DOMRef.value.getBoundingClientRect().y + "px";
+		menu.value.left = e.clientX + "px";
+		menu.value.top = e.clientY + "px";
 		menu.value.index = index;
 	}
 };
